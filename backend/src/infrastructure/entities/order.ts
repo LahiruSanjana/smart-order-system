@@ -9,6 +9,7 @@ export interface IOrderItemSub {
 export interface IOrderItem extends mongoose.Document {
     customerId: mongoose.Types.ObjectId;
     items: IOrderItemSub[];
+    totalAmount: number;
     deliveryAddress: string;
     deliveryLocation?: {
         lat: number;
@@ -38,4 +39,4 @@ const orderItemSchema = new mongoose.Schema({
 orderItemSchema.index({ customerId: 1, status: 1 });
 orderItemSchema.index({ assignedBranchId: 1, status: 1 });
 
-export const OrderItem = mongoose.model<IOrderItem>('OrderItem', orderItemSchema);
+export const OrderItems = mongoose.model<IOrderItem>('OrderItem', orderItemSchema);

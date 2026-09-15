@@ -3,14 +3,14 @@ import { IOrderItemSub } from "../infrastructure/entities/Order";
 
 interface ICoordinates {
     lat: number;
-    lon: number;
+    lng: number;
 }
 
 function calculateDistance(point1: ICoordinates, point2: ICoordinates): number {
     // distance between latitudes
     // and longitudes
     let dLat = (point2.lat - point1.lat) * Math.PI / 180.0;
-    let dLon = (point2.lon - point1.lon) * Math.PI / 180.0;
+    let dLon = (point2.lng - point1.lng) * Math.PI / 180.0;
 
     // convert to radiansa
     let lat1Rad = (point1.lat) * Math.PI / 180.0;
@@ -45,11 +45,11 @@ export async function allocateBestBranch(orderItems: IOrderItemSub[], customerLo
         const distance = calculateDistance(
             {
                 lat: customerLocation.lat,
-                lon: customerLocation.lon
+                lng: customerLocation.lng
             },
             {
                 lat: branch.location.lat,
-                lon: branch.location.lng
+                lng: branch.location.lng
             }
         );
         eligibleBranches.push({

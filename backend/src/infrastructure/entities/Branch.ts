@@ -29,11 +29,11 @@ const branchSchema = new mongoose.Schema({
     },
     stock: [{
         productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-        quantity: { type: Number, required: true, min: 0 },
+        quantity: { type: Number, required: false, min: 0 },
     }],
-    currentWorkload: { type: Number, required: true, default: 0, min: 0 },
-    maxCapacity: { type: Number, required: true, min: 0 },
-    isActive: { type: Boolean, required: true, default: true },
+    currentWorkload: { type: Number, required: false, default: 0, min: 0 },
+    maxCapacity: { type: Number, required: true, default: 100, min: 1 },
+    isActive: { type: Boolean, required: false, default: true },
 }, { timestamps: true });
 
 branchSchema.index({"location.lat": 1, "location.lng": 1});

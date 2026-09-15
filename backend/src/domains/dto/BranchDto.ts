@@ -2,6 +2,7 @@ import {z} from "zod";
 
 export const CreateBranchDto = z.object({
     name: z.string().min(1, "Branch name is required"),
+    code: z.string().min(1, "Branch code is required"),
     address: z.string().min(1, "Branch address is required"),
     location: z.object({
         lat: z.number().optional(),
@@ -16,8 +17,22 @@ export const UpdateBranchDto = z.object({
         lat: z.number().optional(),
         lng: z.number().optional(),
     }).optional(),
+    stock: z.array(z.any()).optional(),
+    currentWorkload: z.number().optional(),
+    maxCapacity: z.number().optional(),
+    isActive: z.boolean().optional(),
 });
 
 export const getBranch = z.object({
     branchId: z.string().min(1, "Branch ID is required"),
+});
+
+export const getBranchByIdDto = z.object({
+    branchId: z.string().min(1, "Branch ID is required"),
+    address: z.string().min(1, "Branch address is required").optional(),
+    location: z.object({
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+    }).optional(),
+    name: z.string().min(1, "Branch name is required").optional(),
 });
