@@ -22,12 +22,13 @@ export default function OrderCreate() {
   const navigate = useNavigate();
   const user = getStoredUser();
   const { data: product, isLoading } = useGetProductQuery(productId);
-  const [createOrder, { isLoading: isSaving, error }] =
-    useCreateOrderMutation();
+  const [createOrder, { isLoading: isSaving, error }] = useCreateOrderMutation();
   const [quantity, setQuantity] = useState(1);
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  console.log(createOrder)
 
   async function submit(event) {
     event.preventDefault();
@@ -44,7 +45,10 @@ export default function OrderCreate() {
         ],
         totalAmount: Number(product.price) * Number(quantity),
         deliveryAddress: address,
-        deliveryLocation: location,
+        deliveryLocation: {
+          lat: Number(location.lat),
+          lng: Number(location.lng),
+        },
       }).unwrap();
       setSuccess(true);
     } catch {
@@ -81,7 +85,7 @@ export default function OrderCreate() {
     );
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12">
+    <main className="min-h-screen bg-gray-200 px-6 py-12">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
           <p className="eyebrow">Secure checkout</p>
@@ -93,7 +97,7 @@ export default function OrderCreate() {
           onSubmit={submit}
           className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]"
         >
-          <section className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
+          <section className="space-y-5 rounded-2xl bg-emerald-800 p-6 shadow-sm">
             <h2 className="text-lg font-bold">Order details</h2>
             <div className="flex justify-between border-b pb-4">
               <span>{product.name}</span>
@@ -107,7 +111,7 @@ export default function OrderCreate() {
                 type="number"
                 value={quantity}
                 onChange={(event) => setQuantity(event.target.value)}
-                className="rounded-lg border border-slate-200 p-3"
+                className="rounded-lg border border-slate-200 p-3 text-slate-800"
               />
             </label>
             <label className="grid gap-2 text-sm font-semibold">
@@ -116,7 +120,7 @@ export default function OrderCreate() {
                 required
                 value={address}
                 onChange={(event) => setAddress(event.target.value)}
-                className="min-h-28 rounded-lg border border-slate-200 p-3"
+                className="min-h-28 rounded-lg border border-slate-200 p-3 text-slate-800"
                 placeholder="Street, city, postal code"
               />
             </label>
@@ -141,9 +145,24 @@ export default function OrderCreate() {
           <section>
             <DeliveryMap value={location} onChange={setLocation} />
             {location && (
-              <p className="mt-3 text-sm text-slate-500">
-                Selected: {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
-              </p>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="rounded-lg border border-slate-200 bg-white p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Latitude
+                  </p>
+                  <p className="mt-1 font-mono text-sm text-slate-800">
+                    {Number(location.lat).toFixed(6)}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-white p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Longitude
+                  </p>
+                  <p className="mt-1 font-mono text-sm text-slate-800">
+                    {Number(location.lng).toFixed(6)}
+                  </p>
+                </div>
+              </div>
             )}
           </section>
         </form>

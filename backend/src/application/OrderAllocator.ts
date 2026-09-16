@@ -1,5 +1,6 @@
 import { Branch } from "../infrastructure/entities/Branch";
 import { IOrderItemSub } from "../infrastructure/entities/Order";
+import { Product } from "../infrastructure/entities/Product";
 
 interface ICoordinates {
     lat: number;
@@ -45,30 +46,35 @@ async function getDrivingDistance(point1: ICoordinates, point2: ICoordinates): P
 
 export async function allocateBestBranch(orderItems: IOrderItemSub[], customerLocation: ICoordinates) {
     const branches = await Branch.find({});
+    const products = await Product.find({
+        _id: { $in: orderItems.map(orderItem => orderItem.productId) },
+    });
+    const productById = new Map(products.map(product => [product._id.toString(), product]));
 
     let eligibleBranches = [];
 
     for (let branch of branches) {
         let hasAllStock = orderItems.every(orderItem => {
             const stockItem = branch.stock.find(s => s.productId.toString() === orderItem.productId.toString());
-            return stockItem && stockItem.quantity >= orderItem.quantity;
+            if (stockItem) return stockItem.quantity >= orderItem.quantity;
+
+            const product = productById.get(orderItem.productId.toString());
+            return Boolean(product && product.stock >= orderItem.quantity);
         });
 
         if (!hasAllStock) continue;
 
         if (branch.currentWorkload >= branch.maxCapacity) continue;
-        if (!branch.location) continue;
+        let distance = Number.POSITIVE_INFINITY;
 
-        const branchLocation = {
-            lat: branch.location.lat,
-            lng: branch.location.lng
-        }
+        if (branch.location?.lat !== undefined && branch.location?.lng !== undefined) {
+            const branchLocation = {
+                lat: branch.location.lat,
+                lng: branch.location.lng
+            };
 
-        let distance = await getDrivingDistance(customerLocation, branchLocation);
-
-        if (distance === null) {
-            const straightLineDistance = calculateDistance(customerLocation, branchLocation);
-            distance = straightLineDistance * 1.3;
+            distance = await getDrivingDistance(customerLocation, branchLocation) ??
+                calculateDistance(customerLocation, branchLocation) * 1.3;
         }
         
         eligibleBranches.push({

@@ -5,17 +5,15 @@ import ProtectedLayout from "./layouts/ProtectedLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import RootLayout from "./layouts/RootLayout";
 import { AuthPage, Dashboard, ListingPage } from "./pages/AppPages";
-import {
-  AdminBranches,
-  AdminOrders,
-  AdminProducts,
-  CustomersPage,
-} from "./pages/AdminPages";
+import AdminCustomersPage from "./pages/AdminCustomersPage";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import OrderCreate from "./pages/OrderCreate";
 import OrderDetails from "./pages/OrderDetails";
 import ProductDetail from "./pages/ProductDetail";
 import Home from "./pages/Home";
+import ProductCreate from "./pages/admin/ProductCreate";
+import BranchCreate from "./pages/admin/BranchCreate";
+import AdminOrderCreate from "./pages/admin/AdminOrderCreate";
 
 export default function App() {
   return (
@@ -44,11 +42,11 @@ export default function App() {
           />
 
           <Route element={<AuthorizedLayout />}>
-            <Route path="/orders" element={<AdminOrders />} />
+            <Route path="/orders" element={<AdminOrderCreate />} />
             <Route path="/orders/:orderId" element={<OrderDetails />} />
-            <Route path="/products" element={<AdminProducts />} />
-            <Route path="/branches" element={<AdminBranches />} />
-            <Route path="/customers" element={<CustomersPage />} />
+            <Route path="/products" element={<ProductCreate />} />
+            <Route path="/branches" element={<BranchCreate />} />
+            <Route path="/customers" element={<AdminCustomersPage />} />
           </Route>
         </Route>
 

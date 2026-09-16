@@ -1,6 +1,7 @@
 import {Request, Response, NextFunction} from "express";
 import { OrderItems } from "../infrastructure/entities/Order";
 import { Branch } from "../infrastructure/entities/Branch";
+import { Product } from "../infrastructure/entities/Product";
 import { allocateBestBranch } from "./OrderAllocator";
 import { z } from "zod";
 import { CreateOrderDto, UpdateOrderDto } from "../domains/dto/OrderDto";
@@ -93,15 +94,23 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
         try {
             await session.withTransaction(async () => {
                 for (const item of validatedData.items) {
-            const updateResult = await Branch.updateOne({
-                _id: assignedBranch._id,
-                stock: { $elemMatch: { productId: item.productId, quantity: { $gte: item.quantity } } }
-            }, {
-                $inc: {"stock.$.quantity": -item.quantity}
-            }, { session });
+                    const branchStockUpdate = await Branch.updateOne({
+                        _id: assignedBranch._id,
+                        stock: { $elemMatch: { productId: item.productId, quantity: { $gte: item.quantity } } }
+                    }, {
+                        $inc: {"stock.$.quantity": -item.quantity}
+                    }, { session });
 
-                    if (updateResult.modifiedCount !== 1) {
-                        throw new Error(`Insufficient stock for product ${item.productId}`);
+                    if (branchStockUpdate.modifiedCount !== 1) {
+                        const productStockUpdate = await Product.updateOne(
+                            { _id: item.productId, stock: { $gte: item.quantity } },
+                            { $inc: { stock: -item.quantity } },
+                            { session }
+                        );
+
+                        if (productStockUpdate.modifiedCount !== 1) {
+                            throw new Error(`Insufficient stock for product ${item.productId}`);
+                        }
                     }
                 }
 

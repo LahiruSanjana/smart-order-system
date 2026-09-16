@@ -20,15 +20,17 @@ export default function CustomerDashboard() {
   } = useGetOrdersByCustomerQuery(user?.id, { skip: !user?.id });
   return (
     <>
-      <div className="page-header">
-        <div>
-          <div className="eyebrow">Customer workspace</div>
+      <div className="page-header bg-emerald-950">
+        <div className="page-header-content px-16 py-8">
           <h1>My orders</h1>
+          <div className="eyebrow">Customer workspace</div>
           <p>Track your orders and delivery progress.</p>
         </div>
-        <Link className="primary-button" to="/">
-          Shop products
-        </Link>
+        <div className="page-header-actions px-16 py-8">
+          <Link className="primary-button" to="/">
+            Shop products
+          </Link>
+        </div>
       </div>
       {isLoading && <div className="panel">Loading your orders...</div>}
       {isError && (
@@ -37,7 +39,7 @@ export default function CustomerDashboard() {
         </div>
       )}
       {!isLoading && !isError && (
-        <div className="panel">
+        <div className="panel mx-8">
           <div className="mb-5 flex items-center gap-3">
             <ClipboardList className="text-emerald-700" />
             <h2>Order history</h2>
@@ -73,7 +75,7 @@ export default function CustomerDashboard() {
           )}
         </div>
       )}
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-5 mx-8 grid gap-4 sm:grid-cols-2">
         <div className="panel">
           <UserRound className="text-emerald-700" />
           <h2 className="mt-3">Profile</h2>
