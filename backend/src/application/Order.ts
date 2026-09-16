@@ -19,6 +19,32 @@ export const getAllOrders = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
+export const getOrdersByCustomerId = async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const customerId = req.params.customerId;
+        const orders = await OrderItems.find({customerId});
+        res.status(200).json(orders);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({message: error.issues.map(e => e.message).join(", ")});
+        }
+        next(error);
+    }
+}
+
+export const getOredersByBranchId = async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const branchId = req.params.branchId;
+        const orders = await OrderItems.find({branchId});
+        res.status(200).json(orders);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({message: error.issues.map(e => e.message).join(", ")});
+        }
+        next(error);
+    }
+}
+
 export const getOrderById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const orderId = req.params.id;
@@ -45,14 +71,15 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
             return res.status(404).json({message: "Customer not found"});
         }
 
-        if (!customer.location) {
-            return res.status(400).json({message: "Customer location is not set"});
+        const deliveryLocation = validatedData.deliveryLocation ?? customer.location;
+        if (!deliveryLocation) {
+            return res.status(400).json({message: "Delivery location is not set"});
         }
 
         // Allocate the best branch for the order
         const bestBranch = await allocateBestBranch(
             validatedData.items,
-            validatedData.deliveryLocation ?? customer.location
+            deliveryLocation
         );
 
         if (!bestBranch || bestBranch.length === 0) {
@@ -93,7 +120,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                     customerId: validatedData.customerId,
                     items: validatedData.items,
                     deliveryAddress: validatedData.deliveryAddress,
-                    deliveryLocation: validatedData.deliveryLocation,
+                    deliveryLocation,
                     totalAmount,
                     assignedBranchId: assignedBranch._id,
                     status: "PENDING",

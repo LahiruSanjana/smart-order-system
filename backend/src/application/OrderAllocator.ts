@@ -26,6 +26,23 @@ function calculateDistance(point1: ICoordinates, point2: ICoordinates): number {
     return rad * c;
 }
 
+async function getDrivingDistance(point1: ICoordinates, point2: ICoordinates): Promise<number | null> {
+    try {
+        const osrmUrl = `${process.env.OSRMURL ?? ""}${point1.lng},${point1.lat};${point2.lng},${point2.lat}?overview=false`;
+        const response = await fetch(osrmUrl);
+
+        if (!response.ok) return null;
+
+        const data = await response.json();
+        if (data.routes && data.routes.length > 0) {
+            return data.routes[0].distance / 1000;
+        }
+    } catch (error) {
+        console.warn("OSRM API connection failed, falling back to Haversine formula.", error);
+    }
+    return null;
+}
+
 export async function allocateBestBranch(orderItems: IOrderItemSub[], customerLocation: ICoordinates) {
     const branches = await Branch.find({});
 
@@ -42,16 +59,18 @@ export async function allocateBestBranch(orderItems: IOrderItemSub[], customerLo
         if (branch.currentWorkload >= branch.maxCapacity) continue;
         if (!branch.location) continue;
 
-        const distance = calculateDistance(
-            {
-                lat: customerLocation.lat,
-                lng: customerLocation.lng
-            },
-            {
-                lat: branch.location.lat,
-                lng: branch.location.lng
-            }
-        );
+        const branchLocation = {
+            lat: branch.location.lat,
+            lng: branch.location.lng
+        }
+
+        let distance = await getDrivingDistance(customerLocation, branchLocation);
+
+        if (distance === null) {
+            const straightLineDistance = calculateDistance(customerLocation, branchLocation);
+            distance = straightLineDistance * 1.3;
+        }
+        
         eligibleBranches.push({
             branch,
             distance,

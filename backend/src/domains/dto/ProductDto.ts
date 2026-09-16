@@ -7,7 +7,7 @@ export const CreateProductDto = z.object({
     stock: z.number().min(0, "Stock must be a non-negative number"),
     category: z.string().optional(),
     imageUrl: z.string().url("Invalid URL format").optional(),
-    branchId: z.string().min(1, "Branch ID is required"),
+    branchId: z.string().min(1, "Branch ID is required").optional(),
 });
 
 export const UpdateProductDto = z.object({
